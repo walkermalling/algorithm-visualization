@@ -1,0 +1,126 @@
+<html>
+  <head>
+    <title></title>
+    <script src="assets/jquery-1.11.0.min.js" charset="utf-8"></script>
+    <script src="algorithms/mergesort.js" charset="utf-8"></script>
+    <script charset="utf-8">
+        var set = [],
+            parentOf = [],
+            setSize = 31,
+            treeDepth = Math.ceil( Math.log(setSize) / Math.log(2) ),
+            canvas,
+            tree,
+            options = {
+                rowHeight   : 50,
+                nodeWidth   : 30,
+                branchColor : "rgba(30,80,120,1)"
+            };
+
+        $(function(){
+            // initialize canvas
+            canvas = document.getElementById("canvas"),
+            tree = canvas.getContext("2d");
+
+            // randomize values
+            for (var i = 0; i < setSize; i++) {
+                set[i] = Math.floor(Math.random() * 250);
+            }
+
+            // draw array
+            drawTable( '#data-set', set);
+
+            // draw tree
+            for (var depth = treeDepth - 1;  depth >= 0; depth--) { // each row of nodes
+                for( var position = 0; position < Math.pow(2,depth); position++ ){ // each node
+                    var nodeIndex = Math.pow(2,depth) + position - 1;
+                    createNode('#outcome', nodeIndex, depth, position);
+                }
+            }
+
+            // draw branches
+            for(var j = 0; j < setSize; j++){
+                drawBranch(j, parentOf[j]);
+            }
+        });
+
+        function createNode(context, index, depth, position){
+
+            var endSpace =  Math.pow(2,treeDepth - (depth+1)) - 1,
+                interSpace = 2 * (Math.pow(2,treeDepth - (depth+1)) - 1) + 1;
+
+            newNode = $(document.createElement('a'))
+                            .attr('data-index', index )
+                            .attr('data-pos', position )
+                            .addClass('node')
+                            .html(index)
+                            .css('top' , depth * options.rowHeight )
+                            .css('left', options.nodeWidth * (endSpace + position * interSpace + position) )
+                            .appendTo(context);
+
+            var parentPos = Math.floor(position / 2),
+                parentNode = Math.pow(2,depth-1) + parentPos - 1;
+
+            parentOf[index] = parentNode;
+        }
+
+        function drawBranch(nodeX, nodeY){
+            tree.strokeStyle = options.branchColor;
+            var x = $('.node[data-index="'+nodeX+'"]').position(),
+                y = $('.node[data-index="'+nodeY+'"]').position() || {};
+
+            tree.beginPath();
+            tree.moveTo( x.left + 15 , x.top  );
+            tree.lineTo( y.left + 15 , y.top + 30);
+            tree.stroke();
+        }
+
+        function drawTable(context, set){
+            var table = $(document.createElement('table'))
+                    .addClass('data-table')
+                    .append('<tr></tr><tr></tr>');
+
+            for (var i = 0; i < set.length; i++) {
+                table
+                    .find('tr:nth-child(1)')
+                    .append('<td data-index="'+i+'">'+i+'</td>');
+                table
+                    .find('tr:nth-child(2)')
+                    .append('<td data-index="'+i+'">'+set[i]+'</td>');
+            }
+
+            console.log(table);
+
+            table.appendTo(context);
+
+        }
+
+    </script>
+    <script src="oldestLivingParent.js" charset="utf-8"></script>
+    <style type="text/css" media="screen">
+        body{font-family: Arial, sans-serif; width:1300px;}
+        .data-table td{padding:2px 6px; font-size:12px}
+            .data-table tr:first-child td{color:#aaa;}
+            .data-table tr:nth-child(2) td{color:#000}
+        #outcome{position:relative; width:1300px; height:3000px;}
+            .node{
+                position:absolute;
+                box-sizing: border-box;
+                width:30px; height:30px;
+                border:1px solid #ddd;
+                line-height:30px;
+                text-align:center;
+                font-size:13px;
+            }
+            #canvas{ position:absolute; top:0; left:0;width:1300px;height:3000px;}
+    </style>
+  </head>
+  <body>
+      <h1>Tree Node</h1>
+      <p>Randomized Data Set:</p>
+      <div id="data-set"></div>
+      <p>Tree Representation:</p>
+      <div id="outcome">
+          <canvas id="canvas" width="1300" height="3000"></canvas>
+      </div>
+  </body>
+</html>
